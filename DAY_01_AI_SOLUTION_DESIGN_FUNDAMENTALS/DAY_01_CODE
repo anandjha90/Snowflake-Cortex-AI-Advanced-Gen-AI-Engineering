@@ -1,1 +1,294 @@
+-- PURPOSE: Create the shared training database, schema and sample data used by Labs 1.1 through 1.5.
+
+CREATE DATABASE IF NOT EXISTS AI_SOLUTION_DESIGN_LAB;
+CREATE SCHEMA IF NOT EXISTS AI_SOLUTION_DESIGN_LAB.LAB;
+ 
+USE DATABASE AI_SOLUTION_DESIGN_LAB;
+USE SCHEMA LAB;
+ 
+CREATE OR REPLACE TABLE CUSTOMERS (
+  CUSTOMER_ID    NUMBER(10,0) NOT NULL,
+  CUSTOMER_NAME  VARCHAR(200),
+  REGION         VARCHAR(50),
+  SEGMENT        VARCHAR(50),
+  IS_INTERNAL    BOOLEAN,
+  CONSTRAINT PK_CUSTOMERS PRIMARY KEY (CUSTOMER_ID)
+);
+ 
+CREATE OR REPLACE TABLE PRODUCTS (
+  PRODUCT_ID     NUMBER(10,0) NOT NULL,
+  PRODUCT_NAME   VARCHAR(200),
+  CATEGORY       VARCHAR(50),
+  CONSTRAINT PK_PRODUCTS PRIMARY KEY (PRODUCT_ID)
+);
+ 
+CREATE OR REPLACE TABLE SALES_ORDERS (
+  ORDER_ID       NUMBER(12,0) NOT NULL,
+  CUSTOMER_ID    NUMBER(10,0),
+  PRODUCT_ID     NUMBER(10,0),
+  ORDER_DATE     DATE,
+  GROSS_AMOUNT   NUMBER(18,2),
+  DISCOUNT_AMOUNT NUMBER(18,2),
+  RETURN_AMOUNT  NUMBER(18,2),
+  ORDER_STATUS   VARCHAR(20),
+  CONSTRAINT PK_SALES_ORDERS PRIMARY KEY (ORDER_ID)
+);
+ 
+CREATE OR REPLACE TABLE CUSTOMER_FEEDBACK (
+  FEEDBACK_ID    NUMBER(12,0) NOT NULL,
+  CUSTOMER_ID    NUMBER(10,0),
+  FEEDBACK_DATE  DATE,
+  DEPOT_CODE     VARCHAR(20),
+  FEEDBACK_TEXT  VARCHAR(5000),
+  CONSTRAINT PK_CUSTOMER_FEEDBACK PRIMARY KEY (FEEDBACK_ID)
+);
+
+-- PURPOSE: Load a small, deterministic sample data set for the labs.
+ 
+INSERT INTO CUSTOMERS VALUES
+  (1,'Northwind Freight','North','Enterprise',FALSE),
+  (2,'Baltic Retail Group','North','Mid-Market',FALSE),
+  (3,'Alpine Wholesale','South','Enterprise',FALSE),
+  (4,'Harbour Supplies','East','SMB',FALSE),
+  (5,'Internal Test Account','West','Internal',TRUE);
+ 
+INSERT INTO PRODUCTS VALUES
+  (10,'Pallet Wrap 500m','Packaging'),
+  (11,'Steel Strapping','Packaging'),
+  (12,'Cold Chain Liner','Cold Chain');
+ 
+INSERT INTO SALES_ORDERS VALUES
+  (1001,1,10,'2026-01-15',120000.00,5000.00,0.00,'SHIPPED'),
+  (1002,1,11,'2026-02-11', 80000.00,2000.00,4000.00,'SHIPPED'),
+  (1003,2,10,'2026-02-20', 45000.00,1000.00,0.00,'SHIPPED'),
+  (1004,3,12,'2026-03-02',210000.00,9000.00,0.00,'SHIPPED'),
+  (1005,4,11,'2026-03-18', 15000.00, 500.00,1500.00,'CANCELLED'),
+  (1006,1,12,'2026-04-05', 60000.00,3000.00,0.00,'SHIPPED'),
+  (1007,3,10,'2026-04-22',175000.00,7000.00,2000.00,'SHIPPED'),
+  (1008,2,12,'2026-05-09', 38000.00, 800.00,0.00,'SHIPPED');
+ 
+INSERT INTO CUSTOMER_FEEDBACK VALUES
+  (5001,1,'2026-04-02','DEP-NORTH-1',
+   'Third late delivery this month. Driver arrived after the dock closed.'),
+  (5002,2,'2026-04-11','DEP-NORTH-1',
+   'Pallets arrived damaged, wrap had been cut open in transit.'),
+  (5003,3,'2026-04-19','DEP-SOUTH-2',
+   'Invoice did not match the delivery note. Took two weeks to resolve.'),
+  (5004,4,'2026-05-01','DEP-EAST-1',
+   'Cold chain liner was warm on arrival, product had to be scrapped.'),
+  (5005,1,'2026-05-14','DEP-NORTH-1',
+   'Delivery was on time and the driver was helpful. No issues.');
+
+-------------------------------------------------------------------------------------------------------------------
+-- PURPOSE:       Create the governed semantic contract for sales analytics.
+--                Demonstrates metrics, synonyms, sample values, question
+--                categorisation and a verified query.
+ 
+USE DATABASE AI_SOLUTION_DESIGN_LAB;
+USE SCHEMA LAB;
+ 
+CREATE OR REPLACE SEMANTIC VIEW SALES_PERFORMANCE
+  TABLES (
+    orders AS AI_SOLUTION_DESIGN_LAB.LAB.SALES_ORDERS
+      PRIMARY KEY (ORDER_ID)
+      WITH SYNONYMS ('sales orders', 'orders')
+      COMMENT = 'One row per sales order line for the sales domain',
+    customers AS AI_SOLUTION_DESIGN_LAB.LAB.CUSTOMERS
+      PRIMARY KEY (CUSTOMER_ID)
+      WITH SYNONYMS ('accounts', 'clients')
+      COMMENT = 'Customer master, including internal test accounts',
+    products AS AI_SOLUTION_DESIGN_LAB.LAB.PRODUCTS
+      PRIMARY KEY (PRODUCT_ID)
+      COMMENT = 'Product master'
+  )
+ 
+  RELATIONSHIPS (
+    orders_to_customers AS orders (CUSTOMER_ID) REFERENCES customers,
+    orders_to_products  AS orders (PRODUCT_ID)  REFERENCES products
+  )
+ 
+  FACTS (
+    orders.f_gross      AS GROSS_AMOUNT
+      COMMENT = 'Gross order amount before discount and returns',
+    orders.f_discount   AS DISCOUNT_AMOUNT
+      COMMENT = 'Discount applied to the order',
+    orders.f_returns    AS RETURN_AMOUNT
+      COMMENT = 'Value returned against the order',
+    orders.f_net        AS GROSS_AMOUNT - DISCOUNT_AMOUNT - RETURN_AMOUNT
+      COMMENT = 'Net revenue contribution of the order line'
+  )
+ 
+  DIMENSIONS (
+    orders.d_order_date    AS ORDER_DATE
+      COMMENT = 'Date the order was placed',
+    orders.d_order_year    AS YEAR(ORDER_DATE)
+      COMMENT = 'Calendar year of the order',
+    orders.d_order_quarter AS CONCAT(YEAR(ORDER_DATE), '-Q',
+                                     QUARTER(ORDER_DATE))
+      COMMENT = 'Calendar quarter of the order, format YYYY-Qn',
+    orders.d_order_status  AS ORDER_STATUS
+      COMMENT = 'Lifecycle status of the order'
+      SAMPLE_VALUES ('SHIPPED', 'CANCELLED')
+      IS_ENUM,
+    customers.d_customer_name AS CUSTOMER_NAME
+      WITH SYNONYMS = ('account name', 'client name')
+      COMMENT = 'Customer display name',
+    customers.d_region     AS REGION
+      COMMENT = 'Sales region of the customer'
+      SAMPLE_VALUES ('North', 'South', 'East', 'West')
+      IS_ENUM,
+    customers.d_segment    AS SEGMENT
+      COMMENT = 'Commercial segment of the customer'
+      SAMPLE_VALUES ('Enterprise', 'Mid-Market', 'SMB', 'Internal'),
+    customers.d_is_internal AS IS_INTERNAL
+      COMMENT = 'Whether the customer is an internal test account'
+      SAMPLE_VALUES ('TRUE', 'FALSE')
+      IS_ENUM,
+    products.d_category    AS CATEGORY
+      COMMENT = 'Product category'
+  )
+ 
+  METRICS (
+    orders.m_gross_revenue AS SUM(orders.f_gross)
+      WITH SYNONYMS = ('gross sales')
+      COMMENT = 'Gross revenue: sum of gross amount, all statuses',
+    orders.m_net_revenue AS SUM(
+      CASE WHEN orders.ORDER_STATUS = 'SHIPPED'
+             AND customers.d_is_internal = FALSE
+           THEN orders.f_net ELSE 0 END)
+      WITH SYNONYMS = ('revenue', 'net sales')
+      COMMENT = 'AUTHORITATIVE REVENUE. Gross less discount less returns, shipped orders only, excluding internal accounts. Owner: Finance (Revenue Reporting).',
+    orders.m_order_count AS COUNT(orders.ORDER_ID)
+      COMMENT = 'Number of order lines',
+    customers.m_customer_count AS COUNT(customers.CUSTOMER_ID)
+      COMMENT = 'Number of distinct customers'
+  )
+ 
+  COMMENT = 'Governed semantic contract for sales analytics. Metric owner: Finance. Do not add metrics without sign-off.'
+ 
+  AI_SQL_GENERATION 'Always report currency amounts rounded to 2 decimal places. When a question does not specify a period, state the period used in the answer.'
+ 
+  AI_QUESTION_CATEGORIZATION 'Reject any question about employees, payroll, or individual customer contacts and tell the user this assistant covers sales performance only. If a revenue question does not specify gross or net, treat it as net revenue and say so.'
+;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- PURPOSE:       Validate the semantic contract deterministically.
+ 
+SELECT * FROM SEMANTIC_VIEW(
+  SALES_PERFORMANCE
+  METRICS    orders.m_net_revenue, orders.m_gross_revenue
+  DIMENSIONS customers.d_region, orders.d_order_quarter
+)
+ORDER BY d_order_quarter, d_region;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- PURPOSE:       Classify free-text delivery feedback into root-cause
+--                categories, and derive sentiment, in a single pass.
+ 
+SELECT
+    FEEDBACK_ID,
+    DEPOT_CODE,
+    AI_CLASSIFY(
+      FEEDBACK_TEXT,
+      ['late delivery', 'damaged goods', 'billing error',
+       'cold chain failure', 'positive feedback']
+    ) AS ROOT_CAUSE,
+    AI_SENTIMENT(FEEDBACK_TEXT) AS SENTIMENT
+FROM CUSTOMER_FEEDBACK
+WHERE FEEDBACK_DATE >= '2026-04-01';
+
+-------------------------------------------------------------------------------------------------------------------------
+
+-- PURPOSE: Use AI as a predicate and as an aggregate: find feedback indicating a service failure, then summarise by depot.
+ 
+SELECT
+    DEPOT_CODE,
+    COUNT(*) AS FAILURE_MENTIONS,
+    AI_AGG(
+      FEEDBACK_TEXT,
+      'Summarise the operational failures described in these customer ' ||
+      'comments in at most three bullet points. Do not name individuals.'
+    ) AS DEPOT_FAILURE_SUMMARY
+FROM CUSTOMER_FEEDBACK
+WHERE AI_FILTER(
+        PROMPT('Does this customer comment describe a service failure? {0}',
+               FEEDBACK_TEXT))
+GROUP BY DEPOT_CODE
+ORDER BY FAILURE_MENTIONS DESC;
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+-- PURPOSE: Materialise classification once so downstream consumers pay warehouse cost, not token cost, on every read.
+
+CREATE OR REPLACE TABLE FEEDBACK_CLASSIFIED AS
+SELECT
+    FEEDBACK_ID,
+    CUSTOMER_ID,
+    FEEDBACK_DATE,
+    DEPOT_CODE,
+    AI_CLASSIFY(
+      FEEDBACK_TEXT,
+      ['late delivery', 'damaged goods', 'billing error',
+       'cold chain failure', 'positive feedback']
+    ) AS ROOT_CAUSE,
+    CURRENT_TIMESTAMP() AS CLASSIFIED_AT
+FROM CUSTOMER_FEEDBACK;
+
+-----------------------------------------------------------------------------------------------------------------------
+
+-- PURPOSE: Declare an enterprise assistant agent whose capability surface is exactly two tools, with an orchestration budget and explicit refusal instructions.
+ 
+USE DATABASE AI_SOLUTION_DESIGN_LAB;
+USE SCHEMA LAB;
+ 
+CREATE OR REPLACE AGENT SALES_OPS_ASSISTANT
+  COMMENT = 'Sales and operations assistant. Scope: sales performance metrics only. Owner: Sales Operations.'
+  PROFILE = '{"display_name": "Sales Ops Assistant"}'
+  FROM SPECIFICATION
+  $$
+  models:
+    orchestration: auto
+ 
+  orchestration:
+    tool_not_accessible: accept
+    budget:
+      seconds: 30
+      tokens: 16000
+ 
+  instructions:
+    response: >
+      Answer concisely. Always state the metric name, the period used and
+      the filters applied. Never present a figure without naming which
+      metric produced it.
+    orchestration: >
+      Use the SalesMetrics tool for any question about revenue, orders,
+      customers or regions. If a question cannot be answered from the
+      declared tools, say so explicitly and state that this assistant
+      covers sales performance only. Do not answer from general knowledge.
+    sample_questions:
+      - question: "What was net revenue by region last quarter?"
+      - question: "Which customers had the highest net revenue this year?"
+ 
+  tools:
+    - tool_spec:
+        type: "cortex_analyst_text_to_sql"
+        name: "SalesMetrics"
+        description: >
+          Answers questions about sales performance metrics: net revenue,
+          gross revenue, order counts and customer counts, by region,
+          segment, product category, quarter and year.
+    - tool_spec:
+        type: "data_to_chart"
+        name: "data_to_chart"
+        description: "Generates a chart from data returned by other tools."
+ 
+  tool_resources:
+    SalesMetrics:
+      semantic_view: "AI_SOLUTION_DESIGN_LAB.LAB.SALES_PERFORMANCE"
+  $$;
+ 
+-- Review what was actually declared:
+DESCRIBE AGENT SALES_OPS_ASSISTANT;
 
