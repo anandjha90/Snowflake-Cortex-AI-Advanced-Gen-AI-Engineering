@@ -1,4 +1,4 @@
-name: SALES_PERFORMANCE_CLONE_V2
+name: SALES_PERFORMANCE_CLONE
 description: "Governed semantic contract for sales analytics. Metric owner: Finance. Do not add metrics without sign-off."
 tables:
   - name: CUSTOMERS
