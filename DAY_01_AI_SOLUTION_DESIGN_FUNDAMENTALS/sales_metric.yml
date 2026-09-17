@@ -1,0 +1,183 @@
+name: SALES_PERFORMANCE_CLONE_V2
+description: "Governed semantic contract for sales analytics. Metric owner: Finance. Do not add metrics without sign-off."
+tables:
+  - name: CUSTOMERS
+    synonyms:
+      - accounts
+      - clients
+    description: "Customer master"
+    base_table:
+      database: AI_SOLUTION_DESIGN_LAB
+      schema: LAB
+      table: CUSTOMERS
+    primary_key:
+      columns:
+        - CUSTOMER_ID
+    dimensions:
+      - name: D_CUSTOMER_NAME
+        synonyms:
+          - account name
+          - client name
+        description: Customer display name
+        expr: CUSTOMER_NAME
+        data_type: VARCHAR(200)
+        access_modifier: public_access
+      - name: D_IS_INTERNAL
+        description: Whether the customer is an internal test account
+        expr: IS_INTERNAL
+        data_type: BOOLEAN
+        access_modifier: public_access
+        is_enum: true
+        sample_values:
+          - "TRUE"
+          - "FALSE"
+      - name: D_REGION
+        description: Sales region of the customer
+        expr: REGION
+        data_type: VARCHAR(50)
+        access_modifier: public_access
+        is_enum: true
+        sample_values:
+          - North
+          - South
+          - East
+          - West
+      - name: D_SEGMENT
+        description: Commercial segment of the customer
+        expr: SEGMENT
+        data_type: VARCHAR(50)
+        access_modifier: public_access
+        sample_values:
+          - Enterprise
+          - Mid-Market
+          - SMB
+          - Internal
+    metrics:
+      - name: M_CUSTOMER_COUNT
+        description: Number of distinct customers
+        expr: COUNT(customers.CUSTOMER_ID)
+        access_modifier: public_access
+  - name: ORDERS
+    synonyms:
+      - sales orders
+      - orders
+    description: One row per sales order line for the sales domain
+    base_table:
+      database: AI_SOLUTION_DESIGN_LAB
+      schema: LAB
+      table: SALES_ORDERS
+    primary_key:
+      columns:
+        - ORDER_ID
+    dimensions:
+      - name: D_CUSTOMER_ID
+        description: Foreign key to CUSTOMERS table
+        expr: CUSTOMER_ID
+        data_type: "NUMBER(10,0)"
+        access_modifier: public_access
+      - name: D_PRODUCT_ID
+        description: Foreign key to PRODUCTS table
+        expr: PRODUCT_ID
+        data_type: "NUMBER(10,0)"
+        access_modifier: public_access
+      - name: D_ORDER_DATE
+        description: Date the order was placed
+        expr: ORDER_DATE
+        data_type: DATE
+        access_modifier: public_access
+      - name: D_ORDER_QUARTER
+        description: "Calendar quarter of the order"
+        expr: |-
+          CONCAT(YEAR(ORDER_DATE), '-Q',
+                                               QUARTER(ORDER_DATE))
+        data_type: VARCHAR(134217728)
+        access_modifier: public_access
+      - name: D_ORDER_STATUS
+        description: Lifecycle status of the order
+        expr: ORDER_STATUS
+        data_type: VARCHAR(20)
+        access_modifier: public_access
+        is_enum: true
+        sample_values:
+          - SHIPPED
+          - CANCELLED
+      - name: D_ORDER_YEAR
+        description: Calendar year of the order
+        expr: YEAR(ORDER_DATE)
+        data_type: "NUMBER(4,0)"
+        access_modifier: public_access
+    facts:
+      - name: F_DISCOUNT
+        description: Discount applied to the order
+        expr: DISCOUNT_AMOUNT
+        data_type: "NUMBER(18,2)"
+        access_modifier: public_access
+      - name: F_GROSS
+        description: Gross order amount before discount and returns
+        expr: GROSS_AMOUNT
+        data_type: "NUMBER(18,2)"
+        access_modifier: public_access
+      - name: F_NET
+        description: Net revenue contribution of the order line
+        expr: GROSS_AMOUNT - DISCOUNT_AMOUNT - RETURN_AMOUNT
+        data_type: "NUMBER(20,2)"
+        access_modifier: public_access
+      - name: F_RETURNS
+        description: Value returned against the order
+        expr: RETURN_AMOUNT
+        data_type: "NUMBER(18,2)"
+        access_modifier: public_access
+    metrics:
+      - name: M_GROSS_REVENUE
+        synonyms:
+          - gross sales
+        description: "Gross revenue: sum of gross amount, all statuses"
+        expr: SUM(orders.f_gross)
+        access_modifier: public_access
+      - name: M_NET_REVENUE
+        synonyms:
+          - revenue
+          - net sales
+          - total sales
+        description: "AUTHORITATIVE REVENUE. Gross less discount less returns, shipped orders only, excluding internal accounts."
+        expr: |-
+          SUM(
+                CASE WHEN orders.ORDER_STATUS = 'SHIPPED'
+                       AND customers.d_is_internal = FALSE
+                     THEN orders.f_net ELSE 0 END)
+        access_modifier: public_access
+      - name: M_ORDER_COUNT
+        description: Number of order lines
+        expr: COUNT(orders.ORDER_ID)
+        access_modifier: public_access
+  - name: PRODUCTS
+    description: Product master
+    base_table:
+      database: AI_SOLUTION_DESIGN_LAB
+      schema: LAB
+      table: PRODUCTS
+    primary_key:
+      columns:
+        - PRODUCT_ID
+    dimensions:
+      - name: D_CATEGORY
+        description: Product category
+        expr: CATEGORY
+        data_type: VARCHAR(50)
+        access_modifier: public_access
+relationships:
+  - name: ORDERS_TO_CUSTOMERS
+    left_table: ORDERS
+    right_table: CUSTOMERS
+    relationship_columns:
+      - left_column: CUSTOMER_ID
+        right_column: CUSTOMER_ID
+  - name: ORDERS_TO_PRODUCTS
+    left_table: ORDERS
+    right_table: PRODUCTS
+    relationship_columns:
+      - left_column: PRODUCT_ID
+        right_column: PRODUCT_ID
+module_custom_instructions:
+  sql_generation: "Always report currency amounts rounded to 2 decimal places. When a question does not specify a period, state the period used in the answer."
+  question_categorization: "Reject any question about employees, payroll, or individual customer contacts and tell the user this assistant covers sales performance only. If a revenue question does not specify gross or net, treat it as net revenue and say so."
