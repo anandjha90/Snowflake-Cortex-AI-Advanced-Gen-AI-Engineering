@@ -1,0 +1,176 @@
+name: SV_HEALTH_BILLS
+description: Semantic layer over sanitized health-checkup bills for Cortex Analyst.
+tables:
+  - name: BILLS
+    synonyms:
+      - bills
+      - invoices
+      - health checkup bills
+      - service bills
+    description: One row per hospital health-checkup service bill. PII redacted.
+    base_table:
+      database: HEALTH_CHECKUP_DB
+      schema: CURATED
+      table: HEALTH_BILL_HEADER
+    primary_key:
+      columns:
+        - RELATIVE_PATH
+    dimensions:
+      - name: BILL_NUMBER
+        synonyms:
+          - bill no
+          - invoice number
+        expr: BILL_NUMBER
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Unique identifier for each health-checkup service bill. Assigned sequentially by the hospital billing system.
+      - name: BILL_TIMESTAMP
+        synonyms:
+          - bill date
+          - visit date
+        expr: BILL_DATE
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Date and time when the bill was generated. Stored as a formatted string. Primary time reference for billing activity analysis.
+      - name: DEPARTMENT
+        synonyms:
+          - dept
+          - speciality
+          - unit
+        expr: DEPARTMENT
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Hospital department that conducted the health checkup. Values include Cardiology, General Medicine, Endocrinology, Master Health Checkup, and Pulmonology.
+      - name: OP_NUMBER
+        synonyms:
+          - op no
+          - outpatient number
+        expr: OP_NUMBER
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Outpatient registration number assigned to the patient for the visit. Used to link the bill to the patient encounter.
+      - name: PACKAGE_NAME
+        synonyms:
+          - package
+          - checkup package
+        expr: PACKAGE_NAME
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Name of the health-checkup package selected by the patient. Examples include Cardiac Care Check Up, Master Health Check Up, Diabetic Care Package, Executive Wellness Panel, and Basic Preventive Screening.
+      - name: PAYMENT_MODE
+        synonyms:
+          - mode of payment
+          - how paid
+        expr: PAYMENT_MODE
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Method used to settle the bill. Values are CARD, CASH, UPI, or INSURANCE. Determines the split between card payment, collected amount, and outstanding balance.
+      - name: TOKEN_NUMBER
+        synonyms:
+          - token
+        expr: TOKEN_NUMBER
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Queue token issued to the patient at the time of service. Used for visit-level identification within the hospital.
+    metrics:
+      - name: AVG_BILL_VALUE
+        expr: AVG(bills.TOTAL_AMOUNT)
+        access_modifier: public_access
+        description: Average bill amount across the selected set of bills. Calculated as the mean of individual bill totals. Reported in INR.
+      - name: BILL_COUNT
+        description: Number of bills.
+        expr: COUNT(bills.RELATIVE_PATH)
+        access_modifier: public_access
+      - name: TOTAL_BILLED
+        description: Gross billed value across bills.
+        expr: SUM(bills.TOTAL_AMOUNT)
+        access_modifier: public_access
+      - name: TOTAL_CARD_PAID
+        description: Value settled by card/UPI.
+        expr: SUM(bills.CARD_PAYMENT_AMOUNT)
+        access_modifier: public_access
+      - name: TOTAL_COLLECTED
+        description: Cash collected at the counter.
+        expr: SUM(bills.COLLECTED_AMOUNT)
+        access_modifier: public_access
+      - name: TOTAL_OUTSTANDING
+        description: Unpaid balance remaining.
+        expr: SUM(bills.BALANCE)
+        access_modifier: public_access
+  - name: SERVICES
+    synonyms:
+      - tests
+      - services
+      - procedures
+      - investigations
+    description: One row per test or service line on a bill.
+    base_table:
+      database: HEALTH_CHECKUP_DB
+      schema: CURATED
+      table: HEALTH_BILL_SERVICE
+    primary_key:
+      columns:
+        - RELATIVE_PATH
+        - SERVICE_SEQ
+    dimensions:
+      - name: SERVICE_CATEGORY
+        synonyms:
+          - test type
+          - test group
+        expr: SERVICE_CATEGORY
+        data_type: VARCHAR(19)
+        access_modifier: public_access
+        description: Broad classification of the test or service performed. Groups individual services into categories such as Lab, Imaging, Consultation, and Cardiac for analytical rollup.
+      - name: SERVICE_NAME_RAW
+        synonyms:
+          - test name
+          - investigation
+        expr: SERVICE_NAME_RAW
+        data_type: VARCHAR(16777216)
+        access_modifier: public_access
+        description: Original name of the individual test or procedure as printed on the bill. Examples include Complete Blood Count, ECG, Lipid Profile, and Thyroid Stimulating Hormone.
+    metrics:
+      - name: SERVICE_COUNT
+        description: Number of test line items.
+        expr: COUNT(services.SERVICE_SEQ)
+        access_modifier: public_access
+relationships:
+  - name: SERVICES_TO_BILLS
+    left_table: SERVICES
+    right_table: BILLS
+    relationship_columns:
+      - left_column: RELATIVE_PATH
+        right_column: RELATIVE_PATH
+verified_queries:
+  - name: Which departments have the highest total billed amounts and how many bills does each department have?
+    question: Which departments have the highest total billed amounts and how many bills does each department have?
+    sql: SELECT department, SUM(total_amount) AS total_billed, COUNT(relative_path) AS bill_count FROM bills GROUP BY department ORDER BY total_billed DESC NULLS LAST
+    verified_at: 1789474918
+  - name: How does the total billed amount and number of bills break down by payment method?
+    question: How does the total billed amount and number of bills break down by payment method?
+    sql: SELECT payment_mode, COUNT(relative_path) AS bill_count, SUM(total_amount) AS total_billed FROM bills GROUP BY payment_mode ORDER BY total_billed DESC NULLS LAST
+    verified_at: 1789474938
+  - name: What are the 5 most recent health checkup bills and which departments issued them?
+    question: What are the 5 most recent health checkup bills and which departments issued them?
+    sql: SELECT bill_number, bill_timestamp, department FROM bills ORDER BY TRY_TO_DATE(bill_timestamp) DESC NULLS LAST LIMIT 5
+    verified_at: 1789474938
+  - name: What is the average bill value by checkup package?
+    question: What is the average bill value by checkup package?
+    sql: SELECT package_name, AVG(total_amount) AS avg_bill_value, COUNT(relative_path) AS bill_count FROM bills GROUP BY package_name ORDER BY avg_bill_value DESC NULLS LAST
+    verified_at: 1789474956
+  - name: What is the total outstanding balance by department?
+    question: What is the total outstanding balance by department?
+    sql: SELECT department, SUM(balance) AS total_outstanding, COUNT(relative_path) AS bill_count FROM bills WHERE balance > 0 GROUP BY department ORDER BY total_outstanding DESC NULLS LAST
+    verified_at: 1789474956
+  - name: How many distinct services or tests are performed per department?
+    question: How many distinct services or tests are performed per department?
+    sql: SELECT b.department, COUNT(DISTINCT s.service_name_raw) AS distinct_services, COUNT(s.service_seq) AS total_service_lines FROM services AS s JOIN bills AS b ON b.relative_path = s.relative_path GROUP BY b.department ORDER BY distinct_services DESC NULLS LAST
+    verified_at: 1789474975
+  - name: What are the most commonly performed tests across all bills?
+    question: What are the most commonly performed tests across all bills?
+    sql: SELECT service_name_raw, COUNT(service_seq) AS times_performed FROM services GROUP BY service_name_raw ORDER BY times_performed DESC NULLS LAST LIMIT 10
+    verified_at: 1789474975
+  - name: What is the total amount collected in cash versus card versus UPI?
+    question: What is the total amount collected in cash versus card versus UPI?
+    sql: SELECT payment_mode, SUM(collected_amount) AS total_collected, SUM(card_payment_amount) AS total_card_paid, SUM(total_amount) AS total_billed FROM bills GROUP BY payment_mode ORDER BY total_billed DESC NULLS LAST
+    verified_at: 1789474975
