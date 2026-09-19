@@ -121,4 +121,3 @@ ORDER BY table_name;
 -- Confirm the AI functions are callable at all before running the rest:
 SELECT AI_COMPLETE('claude-sonnet-4-6', 'Reply with the single word: ready') AS smoke_test;
 
---SHOW CORTEX BASE MODELS IN SCHEMA SNOWFLAKE.MODELS; --You can Pick any model showing GA
