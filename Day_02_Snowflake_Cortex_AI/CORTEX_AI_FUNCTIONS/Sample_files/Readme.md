@@ -42,7 +42,7 @@ snowsql -a <account> -u <user> -d CORTEX_DEMO -s DEMO -q "
 `AUTO_COMPRESS=FALSE` matters — a gzipped PDF is not a PDF as far as the AI functions are
 concerned.
 
-No CLI? In Snowsight go to **Data → Databases → CORTEX_DEMO → DEMO → Stages → MEDIA_STAGE** and
+No CLI? In Snowsight go to **Data → Databases → CORTEX_DB → CORTEX_SC → Stages → MEDIA_STAGE** and
 use the **+ Files** button, then run `ALTER STAGE media_stage REFRESH;` in a worksheet.
 
 Confirm all eight arrived:
@@ -53,10 +53,6 @@ SELECT RELATIVE_PATH, SIZE FROM DIRECTORY(@media_stage) ORDER BY RELATIVE_PATH;
 
 Then run `11_sample_file_queries.sql`, which is written against these exact filenames.
 
-## If your database is named differently
-
-The screenshot you shared used `CORTEX_DB` / `CORTEX_SC` rather than `CORTEX_DEMO` / `DEMO`.
-Adjust the `USE DATABASE` and `USE SCHEMA` lines at the top of the SQL file to match.
 
 ## What to look for
 
