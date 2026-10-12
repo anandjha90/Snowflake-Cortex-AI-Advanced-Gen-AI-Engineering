@@ -230,3 +230,5 @@ select * from insert_docs_stream;
 execute task insert_delete_docs_task;
 
 alter task insert_delete_docs_task suspend;
+
+drop database CC_QUICKSTART_CORTEX_SEARCH_DOCS;
