@@ -1,0 +1,23 @@
+definition_version: 2
+entities:
+  streamlit_app:
+    type: streamlit
+    main_file: streamlit_app.py
+    title: CORTEX_SEARCH_APP_ASSIGNMENT
+    query_warehouse: DEMO_WAREHOUSE
+    compute_pool: SYSTEM_COMPUTE_POOL_CPU
+    artifacts:
+      - pyproject.toml
+      - streamlit_app.py
+      - .streamlit/config.toml
+    identifier:
+      database: CC_QUICKSTART_CORTEX_SEARCH_DOCS
+      schema: DATA
+      name: CC_CORTEX_SEARCH_APP_PK
+    run_mode: SpcsOnly
+    execute_as: OWNER
+    artifact_repositories:
+      - SNOWFLAKE.SNOWPARK.PYPI_SHARED_REPOSITORY
+    sharing:
+      - role: ACCOUNTADMIN
+        with_grant_option: true
