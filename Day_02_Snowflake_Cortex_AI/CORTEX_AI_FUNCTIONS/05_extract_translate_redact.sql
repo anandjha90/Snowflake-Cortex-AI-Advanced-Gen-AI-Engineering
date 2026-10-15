@@ -19,6 +19,7 @@ USE SCHEMA CORTEX_SC;
 -- 1. Entity extraction, simple object schema (label -> question).
 SELECT
   ticket_id,
+  ticket_text,
   AI_EXTRACT(
     ticket_text,
     {
@@ -32,7 +33,7 @@ ORDER BY ticket_id;
 
 -- 2. Same extraction, flattened into typed columns.
 WITH x AS (
-  SELECT ticket_id,
+  SELECT ticket_id,ticket_text,
          AI_EXTRACT(ticket_text, {
            'order_reference' : 'What order, invoice or PO number is mentioned?',
            'amount'          : 'What monetary amount is in dispute, with currency?',
@@ -41,7 +42,7 @@ WITH x AS (
   FROM support_tickets
 )
 SELECT
-  ticket_id,
+  ticket_id,ticket_text,
   r:order_reference::VARCHAR  AS order_reference,
   r:amount::VARCHAR           AS disputed_amount,
   r:requested_action::VARCHAR AS requested_action
@@ -52,6 +53,7 @@ ORDER BY ticket_id;
 SELECT
   contract_id,
   counterparty,
+  clause_text,
   AI_EXTRACT(
     text => clause_text,
     responseFormat => [
@@ -81,7 +83,7 @@ SELECT
   counterparty,
   e:response:governing_law::VARCHAR AS governing_law,
   e:scoring:governing_law::FLOAT    AS confidence,
-  IFF(e:scoring:governing_law::FLOAT < 0.8, 'REVIEW', 'AUTO') AS disposition
+  IFF(e:scoring:governing_law::FLOAT > 0.8, 'REVIEW', 'AUTO') AS disposition
 FROM x
 ORDER BY confidence;
 
@@ -138,6 +140,7 @@ SELECT
   review_id,
   product_id,
   rating,
+  text_en,
   AI_CLASSIFY(text_en,
     ['product_defect', 'shipping_issue', 'support_failure', 'billing_issue', 'praise']
   ):labels[0]::VARCHAR AS issue
@@ -147,6 +150,7 @@ ORDER BY review_id;
 -- 4. Outbound: reply to each customer in their own language.
 SELECT
   review_id,
+  review_text,
   language,
   AI_TRANSLATE(
     AI_COMPLETE('claude-sonnet-4-6',
@@ -183,7 +187,8 @@ ORDER BY note_id;
 -- 2. Redact only selected categories.
 SELECT
   note_id,
-  AI_REDACT(note_text, ['NAME', 'EMAIL', 'PHONE_NUMBER']) AS partially_redacted
+  note_text,
+  AI_REDACT(note_text, ['EMAIL', 'PHONE_NUMBER']) AS partially_redacted
 FROM customer_notes_pii
 ORDER BY note_id;
 -- Supported categories: NAME, EMAIL, PHONE_NUMBER, DATE_OF_BIRTH, GENDER, AGE,
@@ -193,19 +198,21 @@ ORDER BY note_id;
 -- 3. detect mode - locate PII without changing the text.
 SELECT
   note_id,
+  note_text,
   AI_REDACT(input => note_text, return_error_details => FALSE, mode => 'detect') AS spans
 FROM customer_notes_pii
 WHERE note_id <= 9003;
 
+
+SELECT * FROM customer_notes_pii;
 -- 4. Flatten detect output into an auditable PII inventory.
-SELECT
-  n.note_id,
-  s.value:category::VARCHAR AS pii_category,
-  s.value:text::VARCHAR     AS matched_text,
-  s.value:start::NUMBER     AS start_index,
-  s.value:end::NUMBER       AS end_index
-FROM customer_notes_pii n,
-LATERAL FLATTEN(input => AI_REDACT(input => n.note_text, mode => 'detect'):spans) s
+SELECT n.note_id,
+       s.value:category::VARCHAR AS pii_category,
+       s.value:text::VARCHAR     AS matched_text,
+       s.value:start::NUMBER     AS start_index,
+       s.value:end::NUMBER       AS end_index
+FROM CORTEX_DB.CORTEX_SC.customer_notes_pii n,
+LATERAL FLATTEN(input => AI_REDACT(input => n.note_text, return_error_details => FALSE, mode => 'detect')) s
 ORDER BY n.note_id, start_index;
 
 -- 5. Which PII categories appear most often across the corpus?
@@ -213,7 +220,7 @@ SELECT
   s.value:category::VARCHAR AS pii_category,
   COUNT(*)                  AS occurrences
 FROM customer_notes_pii n,
-LATERAL FLATTEN(input => AI_REDACT(input => n.note_text, mode => 'detect'):spans) s
+LATERAL FLATTEN(input => AI_REDACT(input => n.note_text, mode => 'detect')) s
 GROUP BY 1
 ORDER BY occurrences DESC;
 
@@ -265,5 +272,50 @@ FROM redacted
 GROUP BY note_id
 ORDER BY note_id;
 
+
+-- case study on REDACT AADHAAR & PANCARD
+ALTER SESSION SET AI_SQL_ERROR_HANDLING_USE_FAIL_ON_ERROR = FALSE;
 -- Reset the session parameter when you are done.
 ALTER SESSION UNSET AI_SQL_ERROR_HANDLING_USE_FAIL_ON_ERROR;
+
+-- detect addhara and pancard
+WITH ocr AS (
+  SELECT file_path,
+         AI_COMPLETE('claude-sonnet-4-5',
+           'Transcribe all text visible on this ID card exactly as written, using labels like "Name:", "DOB:", "Address:", "Aadhaar No:", "PAN:". Output only the text.',
+           f)::VARCHAR AS raw_text
+  FROM CORTEX_DB.CORTEX_SC.stage_files
+  WHERE file_path ILIKE '%.jpeg'
+)
+SELECT file_path, AI_REDACT(input => raw_text, return_error_details => FALSE, mode => 'detect') AS spans
+FROM ocr;
+
+-- extract aadhaar and PAN No
+WITH ocr AS (
+  SELECT file_path,
+         AI_COMPLETE('claude-sonnet-4-5',
+           'Transcribe all text visible on this ID card exactly as written, using labels like "Name:", "DOB:", "Address:", "Aadhaar No:", "PAN:". Output only the text.',
+           f)::VARCHAR AS raw_text
+  FROM CORTEX_DB.CORTEX_SC.stage_files
+  WHERE file_path ILIKE '%.jpeg'
+)
+SELECT o.file_path, s.value:category::VARCHAR AS category, s.value:text::VARCHAR AS pii_text,
+       s.value:start::INT AS start_pos, s.value:end::INT AS end_pos
+FROM ocr o,
+     LATERAL FLATTEN(input => AI_REDACT(input => o.raw_text, return_error_details => FALSE, mode => 'detect')) s
+ORDER BY o.file_path, start_pos;
+
+
+
+-- REDACT AADHAAR & PANCARD
+WITH ocr AS (
+  SELECT file_path,
+         AI_COMPLETE('claude-sonnet-4-5', 'Transcribe all text visible on this ID card exactly as written, using labels like "Name:", "DOB:", "Address:", "Aadhaar No:", "PAN:". Output only the text.', f)::VARCHAR AS raw_text
+  FROM CORTEX_DB.CORTEX_SC.stage_files
+  WHERE file_path ILIKE '%.jpeg'
+)
+SELECT file_path, raw_text,
+       AI_REDACT(raw_text, ['NAME','DATE_OF_BIRTH','GENDER','ADDRESS','NATIONAL_ID','TAX_IDENTIFIER','PHONE_NUMBER']) AS redacted_text
+FROM ocr;
+
+
