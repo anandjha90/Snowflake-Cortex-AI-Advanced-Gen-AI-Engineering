@@ -1,1 +1,1 @@
-
+Assignment_Post_Training/Alok_Kumar/Assignment_RAG_Application_Product_Details_Search is main folder containing the RAG application explanation video and the corresponding technical pdf document. Apart from that initially created CC_CORTEX_SEARCH_APP and CC_CORTEX_SEARCH_CHATBOT also for which different folders are created at Assignment_Post_Training/Alok_Kumar.
