@@ -1,0 +1,448 @@
+{
+ "retrieval": [
+  {
+   "q": "Is there any special lubricant to be used with the premium bike?",
+   "rank": 1,
+   "lat": 0.6534116268157959
+  },
+  {
+   "q": "What tyre pressure is recommended for the Premium Bicycle?",
+   "rank": 1,
+   "lat": 0.9566948413848877
+  },
+  {
+   "q": "What brake fluid does the premium bike use?",
+   "rank": 1,
+   "lat": 0.5347599983215332
+  },
+  {
+   "q": "What is the maximum rider weight for the Mondracer infant bike?",
+   "rank": 1,
+   "lat": 0.522956132888794
+  },
+  {
+   "q": "How long is the frame warranty on the Mondracer?",
+   "rank": 1,
+   "lat": 0.49205756187438965
+  },
+  {
+   "q": "What sag should I set on the downhill bike rear shock?",
+   "rank": 1,
+   "lat": 0.5940008163452148
+  },
+  {
+   "q": "What is the main pivot torque on the Ultimate Downhill Bike?",
+   "rank": 1,
+   "lat": 0.5873422622680664
+  },
+  {
+   "q": "At what temperature should TDBootz liners be heat molded?",
+   "rank": 1,
+   "lat": 0.6016457080841064
+  },
+  {
+   "q": "Are TDBootz boots compatible with touring tech bindings?",
+   "rank": 1,
+   "lat": 0.5100243091583252
+  },
+  {
+   "q": "How often should I wax Carver skis?",
+   "rank": 1,
+   "lat": 0.408552885055542
+  },
+  {
+   "q": "What is the factory side edge angle of Carver skis?",
+   "rank": 1,
+   "lat": 0.5299704074859619
+  },
+  {
+   "q": "What is the turn radius of the Carver skis?",
+   "rank": 1,
+   "lat": 0.45328235626220703
+  }
+ ],
+ "answers": {
+  "llama3.3-70b": [
+   {
+    "q": "Is there any special lubricant to be used with the premium bike?",
+    "ok": true,
+    "lat": 3.3716769218444824,
+    "src": true,
+    "len": 17,
+    "a": "Yes, the Premium Bike Chain Lube LX-7, a synthetic wax-based lubricant, should be used on the chain."
+   },
+   {
+    "q": "What tyre pressure is recommended for the Premium Bicycle?",
+    "ok": true,
+    "lat": 2.3061366081237793,
+    "src": true,
+    "len": 8,
+    "a": "80 to 100 PSI, depending on rider weight."
+   },
+   {
+    "q": "What brake fluid does the premium bike use?",
+    "ok": true,
+    "lat": 2.095254421234131,
+    "src": true,
+    "len": 2,
+    "a": "Mineral oil."
+   },
+   {
+    "q": "What is the maximum rider weight for the Mondracer infant bike?",
+    "ok": true,
+    "lat": 1.9194629192352295,
+    "src": true,
+    "len": 2,
+    "a": "30 kg"
+   },
+   {
+    "q": "How long is the frame warranty on the Mondracer?",
+    "ok": true,
+    "lat": 2.8203837871551514,
+    "src": true,
+    "len": 9,
+    "a": "The frame warranty on the Mondracer is 5 years."
+   },
+   {
+    "q": "What sag should I set on the downhill bike rear shock?",
+    "ok": true,
+    "lat": 2.2517056465148926,
+    "src": true,
+    "len": 2,
+    "a": "30 percent."
+   },
+   {
+    "q": "What is the main pivot torque on the Ultimate Downhill Bike?",
+    "ok": true,
+    "lat": 1.7570135593414307,
+    "src": true,
+    "len": 2,
+    "a": "18 Nm."
+   },
+   {
+    "q": "At what temperature should TDBootz liners be heat molded?",
+    "ok": true,
+    "lat": 3.479435682296753,
+    "src": true,
+    "len": 3,
+    "a": "110 degrees Celsius."
+   },
+   {
+    "q": "Are TDBootz boots compatible with touring tech bindings?",
+    "ok": true,
+    "lat": 5.9409284591674805,
+    "src": true,
+    "len": 1,
+    "a": "No."
+   },
+   {
+    "q": "How often should I wax Carver skis?",
+    "ok": true,
+    "lat": 1.7216243743896484,
+    "src": true,
+    "len": 4,
+    "a": "Every 5 ski days."
+   },
+   {
+    "q": "What is the factory side edge angle of Carver skis?",
+    "ok": true,
+    "lat": 1.7393670082092285,
+    "src": true,
+    "len": 2,
+    "a": "3 degree"
+   },
+   {
+    "q": "What is the turn radius of the Carver skis?",
+    "ok": true,
+    "lat": 6.975738048553467,
+    "src": true,
+    "len": 10,
+    "a": "The turn radius of the Carver skis is 14 m."
+   }
+  ],
+  "llama3.1-70b": [
+   {
+    "q": "Is there any special lubricant to be used with the premium bike?",
+    "ok": true,
+    "lat": 2.3624427318573,
+    "src": true,
+    "len": 29,
+    "a": "Yes, the Premium Bike requires a synthetic wax-based lubricant, specifically Premium Bike Chain Lube LX-7, to be applied to the chain every 150 km or after riding in rain."
+   },
+   {
+    "q": "What tyre pressure is recommended for the Premium Bicycle?",
+    "ok": true,
+    "lat": 2.6167876720428467,
+    "src": true,
+    "len": 8,
+    "a": "80 to 100 PSI, depending on rider weight."
+   },
+   {
+    "q": "What brake fluid does the premium bike use?",
+    "ok": true,
+    "lat": 1.9597017765045166,
+    "src": true,
+    "len": 2,
+    "a": "Mineral oil."
+   },
+   {
+    "q": "What is the maximum rider weight for the Mondracer infant bike?",
+    "ok": true,
+    "lat": 1.8384222984313965,
+    "src": true,
+    "len": 12,
+    "a": "The maximum rider weight for the Mondracer Infant Bike is 30 kg."
+   },
+   {
+    "q": "How long is the frame warranty on the Mondracer?",
+    "ok": true,
+    "lat": 1.8508248329162598,
+    "src": true,
+    "len": 11,
+    "a": "The frame warranty on the Mondracer Infant Bike is 5 years."
+   },
+   {
+    "q": "What sag should I set on the downhill bike rear shock?",
+    "ok": true,
+    "lat": 1.9646961688995361,
+    "src": true,
+    "len": 2,
+    "a": "30 percent"
+   },
+   {
+    "q": "What is the main pivot torque on the Ultimate Downhill Bike?",
+    "ok": true,
+    "lat": 1.750511646270752,
+    "src": true,
+    "len": 2,
+    "a": "18 Nm"
+   },
+   {
+    "q": "At what temperature should TDBootz liners be heat molded?",
+    "ok": true,
+    "lat": 2.1278305053710938,
+    "src": true,
+    "len": 3,
+    "a": "110 degrees Celsius"
+   },
+   {
+    "q": "Are TDBootz boots compatible with touring tech bindings?",
+    "ok": true,
+    "lat": 2.6352028846740723,
+    "src": true,
+    "len": 12,
+    "a": "No, TDBootz Special Ski Boots are not compatible with touring tech bindings."
+   },
+   {
+    "q": "How often should I wax Carver skis?",
+    "ok": true,
+    "lat": 2.0489342212677,
+    "src": true,
+    "len": 4,
+    "a": "Every 5 ski days."
+   },
+   {
+    "q": "What is the factory side edge angle of Carver skis?",
+    "ok": true,
+    "lat": 1.3312509059906006,
+    "src": true,
+    "len": 2,
+    "a": "3 degrees"
+   },
+   {
+    "q": "What is the turn radius of the Carver skis?",
+    "ok": true,
+    "lat": 2.2465789318084717,
+    "src": true,
+    "len": 10,
+    "a": "The turn radius of the Carver Skis is 14 m."
+   }
+  ],
+  "llama3.1-8b": [
+   {
+    "q": "Is there any special lubricant to be used with the premium bike?",
+    "ok": true,
+    "lat": 2.0102462768554688,
+    "src": true,
+    "len": 22,
+    "a": "Yes, use Premium Bike Chain Lube LX-7, a synthetic wax-based lubricant, on the chain every 150 km or after riding in rain."
+   },
+   {
+    "q": "What tyre pressure is recommended for the Premium Bicycle?",
+    "ok": true,
+    "lat": 1.6813077926635742,
+    "src": true,
+    "len": 8,
+    "a": "80 to 100 PSI depending on rider weight."
+   },
+   {
+    "q": "What brake fluid does the premium bike use?",
+    "ok": true,
+    "lat": 1.528385877609253,
+    "src": true,
+    "len": 2,
+    "a": "Mineral oil."
+   },
+   {
+    "q": "What is the maximum rider weight for the Mondracer infant bike?",
+    "ok": true,
+    "lat": 1.5044758319854736,
+    "src": true,
+    "len": 2,
+    "a": "30 kg."
+   },
+   {
+    "q": "How long is the frame warranty on the Mondracer?",
+    "ok": true,
+    "lat": 1.5353217124938965,
+    "src": true,
+    "len": 2,
+    "a": "5 years."
+   },
+   {
+    "q": "What sag should I set on the downhill bike rear shock?",
+    "ok": true,
+    "lat": 1.6661255359649658,
+    "src": true,
+    "len": 2,
+    "a": "30 percent."
+   },
+   {
+    "q": "What is the main pivot torque on the Ultimate Downhill Bike?",
+    "ok": true,
+    "lat": 1.5134789943695068,
+    "src": true,
+    "len": 2,
+    "a": "18 Nm."
+   },
+   {
+    "q": "At what temperature should TDBootz liners be heat molded?",
+    "ok": true,
+    "lat": 1.6918540000915527,
+    "src": true,
+    "len": 3,
+    "a": "110 degrees Celsius."
+   },
+   {
+    "q": "Are TDBootz boots compatible with touring tech bindings?",
+    "ok": true,
+    "lat": 1.6125085353851318,
+    "src": true,
+    "len": 12,
+    "a": "No, TDBootz Special Ski Boots are not compatible with touring tech bindings."
+   },
+   {
+    "q": "How often should I wax Carver skis?",
+    "ok": true,
+    "lat": 1.5064170360565186,
+    "src": true,
+    "len": 4,
+    "a": "Every 5 ski days."
+   },
+   {
+    "q": "What is the factory side edge angle of Carver skis?",
+    "ok": true,
+    "lat": 1.3988652229309082,
+    "src": true,
+    "len": 2,
+    "a": "3 degrees."
+   },
+   {
+    "q": "What is the turn radius of the Carver skis?",
+    "ok": true,
+    "lat": 1.3814523220062256,
+    "src": true,
+    "len": 2,
+    "a": "14 m"
+   }
+  ]
+ },
+ "neg": {
+  "llama3.3-70b": [
+   {
+    "q": "What is the battery capacity of the electric scooter?",
+    "abstain": true,
+    "a": "I don't have the information."
+   },
+   {
+    "q": "Who won the 2022 football world cup?",
+    "abstain": true,
+    "a": "I don't have the information."
+   }
+  ],
+  "llama3.1-70b": [
+   {
+    "q": "What is the battery capacity of the electric scooter?",
+    "abstain": true,
+    "a": "I don't have the information."
+   },
+   {
+    "q": "Who won the 2022 football world cup?",
+    "abstain": true,
+    "a": "I don't have the information."
+   }
+  ],
+  "llama3.1-8b": [
+   {
+    "q": "What is the battery capacity of the electric scooter?",
+    "abstain": true,
+    "a": "I don't have the information."
+   },
+   {
+    "q": "Who won the 2022 football world cup?",
+    "abstain": true,
+    "a": "I don't have the information."
+   }
+  ]
+ },
+ "follow": {
+  "llama3.3-70b": [
+   {
+    "q": "What should I avoid using on it?",
+    "ok": true,
+    "rewritten": "What types of lubricants should I avoid using on my premium bike chain to prevent damage, now that I know to use the Premium Bike Chain Lube LX-7?",
+    "a": "You should avoid using WD-40 or motor oil on the chain because they attract grit and damage the drivetrain. Also, never use DOT fluid on the hydraulic brakes.",
+    "lat": 7.7394936084747314
+   },
+   {
+    "q": "And for how long?",
+    "ok": true,
+    "rewritten": "How long should the TDBootz liners be heat molded at 110 degrees Celsius?",
+    "a": "8 minutes.",
+    "lat": 9.31311321258545
+   }
+  ],
+  "llama3.1-70b": [
+   {
+    "q": "What should I avoid using on it?",
+    "ok": true,
+    "rewritten": "What types of lubricants should I avoid using on my Premium Bike to prevent any damage?",
+    "a": "WD-40 and motor oil on the chain.",
+    "lat": 4.789421558380127
+   },
+   {
+    "q": "And for how long?",
+    "ok": true,
+    "rewritten": "How long should the TDBootz liners be heat molded at 110 degrees Celsius?",
+    "a": "8 minutes",
+    "lat": 2.942721128463745
+   }
+  ],
+  "llama3.1-8b": [
+   {
+    "q": "What should I avoid using on it?",
+    "ok": true,
+    "rewritten": "What lubricants should I avoid using on the premium bike?",
+    "a": "WD-40 or motor oil on the chain.",
+    "lat": 2.191786050796509
+   },
+   {
+    "q": "And for how long?",
+    "ok": true,
+    "rewritten": "Can you tell me for how long should TDBootz liners be heat molded at 110 degrees Celsius?",
+    "a": "8 minutes.",
+    "lat": 2.1761372089385986
+   }
+  ]
+ }
+}
