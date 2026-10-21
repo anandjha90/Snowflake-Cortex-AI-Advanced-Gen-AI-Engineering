@@ -1,0 +1,4 @@
+CREATE OR REPLACE TABLE DOCUMENTS_TABLE (
+    file_name VARCHAR,
+    file_content VARCHAR
+);
