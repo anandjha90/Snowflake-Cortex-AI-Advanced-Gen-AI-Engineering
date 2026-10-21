@@ -1,0 +1,11 @@
+employee_id,employee_name,email,date_of_birth,date_of_joining,manager_id,manager_name,department
+E1001,Raghav Sharma,raghav@abc.com,1995-02-14,2021-06-07,M2001,Priya Nair,Analytics
+E1002,Ananya Rao,ananya@abc.com,1997-08-22,2022-01-17,M2001,Priya Nair,Analytics
+E1003,Kiran Reddy,kiran@abc.com,1994-11-03,2020-09-14,M2002,Arjun Mehta,Engineering
+E1004,Meera Iyer,meera@abc.com,1998-04-11,2023-03-20,M2002,Arjun Mehta,Engineering
+E1005,Vikram Das,vikram@abc.com,1993-07-29,2019-12-02,M2003,Neha Kapoor,Operations
+E1006,Sneha Kulkarni,sneha@abc.com,1996-01-05,2021-10-11,M2003,Neha Kapoor,Operations
+E1007,Rahul Verma,rahul@abc.com,1999-05-19,2024-02-05,M2001,Priya Nair,Analytics
+E1008,Pooja Menon,pooja@abc.com,1995-09-30,2020-04-13,M2002,Arjun Mehta,Engineering
+E1009,Sandeep Joshi,sandeep@abc.com,1992-12-08,2018-07-23,M2003,Neha Kapoor,Operations
+E1010,Divya Patel,divya@abc.com,2000-03-16,2024-08-19,M2001,Priya Nair,Analytics
