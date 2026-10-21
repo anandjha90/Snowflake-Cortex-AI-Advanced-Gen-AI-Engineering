@@ -1,0 +1,8 @@
+CREATE OR REPLACE CORTEX SEARCH SERVICE my_file_search_service
+ON file_content
+WAREHOUSE = your_warehouse_name
+TARGET_LAG = '1 hour'
+AS (
+    SELECT file_name, file_content 
+    FROM DOCUMENTS_TABLE
+);
