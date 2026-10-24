@@ -1,0 +1,8 @@
+name: egrocery_cortex_app
+channels:
+  - snowflake
+dependencies:
+  - python=3.10
+  - streamlit
+  - snowflake-snowpark-python
+  - pandas
