@@ -1,4 +1,4 @@
-Here attached below snowflake code .
+Here attached snowflake code .
 
 01_setup_database_and_tables.sql
 
